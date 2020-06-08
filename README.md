@@ -1,1 +1,1 @@
-# dora_explorer
+# Dora the Explorer
