@@ -28,28 +28,30 @@ class ShortestPathFinder():
 		"""
 		clubbed = self.get_clubbed(nen=nen, osn=osn, ned=ned)
 
-		min_nodes = []
-		for i in clubbed:
-			da = i[1]
-			min_dis = min(da)
-			min_index = da.index(min_dis)
-			paired_nodes = i[0][min_index]
-			min_nodes.append(paired_nodes)
+		if clubbed:
+			min_nodes = []
 
-		sub_paths = []
-		for mn in min_nodes:
-			smn = set(mn)
-			snsc = set(self.non_source_cities)
-			sub_source = (snsc - smn).pop()
-			sp = str(sub_source) + ' >>'
+			for i in clubbed:
+				da = i[1]
+				min_dis = min(da)
+				min_index = da.index(min_dis)
+				paired_nodes = i[0][min_index]
+				min_nodes.append(paired_nodes)
 
-			for i in mn:
-				sp += ' ' + str(i) + ' >>'
-			
-			sp = sp + ' ' + str(self.source)
-			sub_paths.append(sp)
+			sub_paths = []
+			for mn in min_nodes:
+				smn = set(mn)
+				snsc = set(self.non_source_cities)
+				sub_source = (snsc - smn).pop()
+				sp = str(sub_source) + ' >>'
+				for i in mn:
+					sp += ' ' + str(i) + ' >>'
+				sp = sp + ' ' + str(self.source)
+				sub_paths.append(sp)
 
-		return sub_paths
+			return sub_paths
+
+		return []
 
 
 	def get_shortest_path(self, nen, osn, ned, end_dis):

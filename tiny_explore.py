@@ -23,7 +23,7 @@ class DoraTheExplorer(object):
 				if i == j:
 					cmatrix[(i, j)] = 0
 				else:
-					cmatrix[(i, j)] = random.randint(10, 80)
+					cmatrix[(i, j)] = random.randint(30, 70)
 
 		return cmatrix
 
