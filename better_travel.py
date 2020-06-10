@@ -5,6 +5,10 @@ from dash.dependencies import (Input, Output)
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 
+from flask import Flask
+import os
+import json, random
+
 from travel_places import GeoTraveller
 
 external_stylesheets = [
@@ -14,39 +18,41 @@ external_stylesheets = [
 with open('mapbox_token.txt', 'r') as mr:
 	mapbox_access = mr.read()
 
+server = Flask(__name__)
+server.secret_key = os.environ.get('secret_key', 'rickyman9')
+
 app = dash.Dash(
 	__name__,
 	external_stylesheets=external_stylesheets,
+	server=server
 )
 
-place_list = {
-	1 : 'Red Fort', 
-	2 : 'Pink City', 
-	3 : 'Goa', 
-	4 : 'Howrah Bridge'
-}
+def get_unique_places():
+	# with open('indian_cities_geoloc.json', 'r', encoding='utf-8') as ico:
+	# 	cities_ = json.load(ico)
+	from india_data import india_dumped
 
-place_coords = {
-	'Red Fort' : [28.6562, 77.2410],
-	'Pink City' : [26.9124, 75.7873],
-	'Goa' : [15.2993, 74.1240],
-	'Howrah Bridge' : [22.5851, 88.3468]
-}
+	city_names = []
+	names_list = list(india_dumped.keys())
+	high = len(names_list)
+	random.seed(25)
+	for i in range(high):
+		if len(city_names) >= 4:
+			break
+		else:
+			uni_name = names_list[random.randint(a=0, b=high)]
+			if uni_name not in city_names:
+				city_names.append(uni_name)
 
-# place_list = {
-# 	1 : 'Rushikonda Beach',
-# 	2 : 'Mahabalipuram Beach',
-# 	3 : 'Goa',
-# 	4 : 'Howrah Bridge'
-# }
+	place_list = {i : j for (i, j) in zip([1, 2, 3, 4], city_names)}
+	place_coords = {i : j for (i, j) in zip(city_names, [india_dumped[c] for c in city_names])}
 
-# place_coords = {
-# 	'Rushikonda Beach' : [17.7825, 83.3851],
-# 	'Mahabalipuram Beach' : [12.6121, 80.1969],
-# 	'Goa' : [15.2993, 74.1240],
-# 	'Howrah Bridge' : [22.5851, 88.3468]
-# }
+	return place_list, place_coords
 
+
+place_list, place_coords = get_unique_places()
+# print(place_list)
+# print(place_coords)
 
 app.layout = html.Div([
 	html.Div([
@@ -89,7 +95,7 @@ def get_least_distance(option_type):
 	lons = [i[1] for i in coords_list]
 	place_names = list(place_coords.keys())
 	# print(place_path)
-	print(dis)
+	# print(dis)
 
 	data = []
 	for each_join in range(len(order_path)):
@@ -157,5 +163,5 @@ def get_least_distance(option_type):
 
 
 
-if __name__ == '__main__':
-	app.run_server(debug=True)
+# if __name__ == '__main__':
+# 	app.run_server(debug=True)
