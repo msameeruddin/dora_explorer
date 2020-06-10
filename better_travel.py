@@ -33,6 +33,21 @@ place_coords = {
 	'Howrah Bridge' : [22.5851, 88.3468]
 }
 
+# place_list = {
+# 	1 : 'Rushikonda Beach',
+# 	2 : 'Mahabalipuram Beach',
+# 	3 : 'Goa',
+# 	4 : 'Howrah Bridge'
+# }
+
+# place_coords = {
+# 	'Rushikonda Beach' : [17.7825, 83.3851],
+# 	'Mahabalipuram Beach' : [12.6121, 80.1969],
+# 	'Goa' : [15.2993, 74.1240],
+# 	'Howrah Bridge' : [22.5851, 88.3468]
+# }
+
+
 app.layout = html.Div([
 	html.Div([
 		dcc.RadioItems(
@@ -44,7 +59,7 @@ app.layout = html.Div([
 			value='normal',
 			labelStyle={
 				'display' : 'inline-block', 
-				'margin-left' : 20
+				'padding-left' : 20
 			}
 		)
 	], style={'padding-top' : 30, 'padding-left' : 30}),
@@ -73,6 +88,8 @@ def get_least_distance(option_type):
 	lats = [i[0] for i in coords_list]
 	lons = [i[1] for i in coords_list]
 	place_names = list(place_coords.keys())
+	# print(place_path)
+	print(dis)
 
 	data = []
 	for each_join in range(len(order_path)):
@@ -105,8 +122,8 @@ def get_least_distance(option_type):
 			lon=lons,
 			marker=go.scattermapbox.Marker(
 				size=15,
-				color='rgb(255, 0, 0)',
-				opacity=0.7
+				color='#78159a',
+				# opacity=0.7
 			),
 			text=place_names,
 			hoverinfo='text'
@@ -114,7 +131,7 @@ def get_least_distance(option_type):
 	)
 
 	layout = go.Layout(
-		title='Geo - Explorer',
+		title='Dora the Geo - Explorer',
 		autosize=True,
 		height=600,
 		hovermode='closest',

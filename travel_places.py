@@ -1,5 +1,6 @@
 import random
 import os
+import mpu
 import requests
 
 from tiny_explore import DoraTheExplorer
@@ -18,19 +19,24 @@ class GeoTraveller(object):
 		"""
 		returns a tuple with the shortest path and the minimum distance
 		"""
-		explore = DoraTheExplorer(cities_count=len(self.place_list))
+		explore = DoraTheExplorer(
+			place_list=self.place_list,
+			place_coords=self.place_coords
+		)
+
 		path, dis = explore.find_shortest_path(source_city=2)
 		self.order_places = [self.place_list[int(i)] for i in path.split(' >> ')]
 		self.order_path = self.get_order_path(order_places=self.order_places)
 		place_path = ' >> '.join(self.order_places)
+
 		return place_path, dis
 
 	def get_order_path(self, order_places):
 		"""returns a list of lists with `from_` and `to_` names"""
-		order_path = []
-
-		for i in range(0, len(order_places) - 1):
-			order_path.append([order_places[i], order_places[i + 1]])
+		order_path = [
+			[order_places[i], order_places[i + 1]] 
+			for i in range(0, len(order_places) - 1)
+		]
 
 		return order_path
 
@@ -67,6 +73,8 @@ class GeoTraveller(object):
 								lats.append(each_loc[1])
 
 		return lats, lons
+
+
 
 
 

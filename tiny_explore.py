@@ -3,29 +3,48 @@ import random
 from find_path import ShortestPathFinder
 
 class DoraTheExplorer(object):
-	def __init__(self, cities_count):
-		self.cities_count = cities_count
-		self.num_cities = self.set_cost_matrix(num=self.cities_count)
+	def __init__(self, place_list, place_coords):
+		self.place_list = place_list
+		self.place_coords = place_coords
+		self.cities_count = len(self.place_list)
+		self.num_cities = self.set_distance_matrix(num=self.cities_count)
 		self.one_step_nodes = []
 		self.distances = []
 		self.final_step_nodes = []
 
 
-	def set_cost_matrix(self, num):
+	def set_distance_matrix(self, num):
 		"""
 		returns a dict that basically contains the cost from `a` to `b`
 		{(1, 2) : 10, ...}
 		"""
-		cmatrix = {}
+		distance_matrix = {}
 
 		for i in range(1, num + 1):
 			for j in range(1, num + 1):
-				if i == j:
-					cmatrix[(i, j)] = 0
-				else:
-					cmatrix[(i, j)] = random.randint(30, 70)
+				from_= self.place_list[i]
+				to_ = self.place_list[j]
+				distance_matrix[(i, j)] = self.get_distance(from_=from_, to_=to_)
 
-		return cmatrix
+		return distance_matrix
+
+
+	def get_distance(self, from_, to_):
+		import mpu
+		"""
+		return float/int formatted distance calculated by taking
+		`from_` coordinates and `to_` coordinates
+		"""
+		from_coords = self.place_coords[from_]
+		to_coords = self.place_coords[to_]
+
+		dist = mpu.haversine_distance(
+			origin=from_coords, 
+			destination=to_coords
+		)
+		dist = round(dist, 2)
+
+		return dist
 
 
 	def get_cost_val(self, row, col, source):
@@ -151,8 +170,26 @@ class DoraTheExplorer(object):
 
 
 if __name__ == '__main__':
-	explore = DoraTheExplorer(cities_count=4)
-	path, dis = explore.find_shortest_path(source_city=1)
+	place_list = {
+		1 : 'Red Fort', 
+		2 : 'Pink City', 
+		3 : 'Goa', 
+		4 : 'Howrah Bridge'
+	}
+
+	place_coords = {
+		'Red Fort' : [28.6562, 77.2410],
+		'Pink City' : [26.9124, 75.7873],
+		'Goa' : [15.2993, 74.1240],
+		'Howrah Bridge' : [22.5851, 88.3468]
+	}
+
+	explore = DoraTheExplorer(
+		place_list=place_list,
+		place_coords=place_coords
+	)
+
+	path, dis = explore.find_shortest_path(source_city=2)
 	print(path)
 	print(dis)
 	# print(explore.distances)
