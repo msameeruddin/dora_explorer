@@ -1,15 +1,20 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table as table
 from dash.dependencies import (Input, Output)
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
+from plotly.offline import plot_mpl
 
 from flask import Flask
 import os
 import json, random
+from pandas import DataFrame
+from collections import OrderedDict
 
 from travel_places import GeoTraveller
+from india_data import india_dumped
 
 external_stylesheets = [
 	'https://codepen.io/chriddyp/pen/bWLwgP.css'
@@ -27,60 +32,79 @@ app = dash.Dash(
 	server=server
 )
 
-def get_unique_places():
-	# with open('indian_cities_geoloc.json', 'r', encoding='utf-8') as ico:
-	# 	cities_ = json.load(ico)
-	from india_data import india_dumped
-
-	city_names = []
-	names_list = list(india_dumped.keys())
-	high = len(names_list)
-	random.seed(25)
-	for i in range(high):
-		if len(city_names) >= 4:
-			break
-		else:
-			uni_name = names_list[random.randint(a=0, b=high)]
-			if uni_name not in city_names:
-				city_names.append(uni_name)
-
-	place_list = {i : j for (i, j) in zip([1, 2, 3, 4], city_names)}
-	place_coords = {i : j for (i, j) in zip(city_names, [india_dumped[c] for c in city_names])}
-
-	return place_list, place_coords
-
-
-place_list, place_coords = get_unique_places()
-# print(place_list)
-# print(place_coords)
+all_cities = list(india_dumped.keys())
+df = DataFrame(OrderedDict([
+    ('cities', ['Bengaluru', 'Mumbai', 'Delhi', 'Cochin']),
+]))
 
 app.layout = html.Div([
 	html.Div([
-		dcc.RadioItems(
-			id='norm-direction',
-			options=[
-				{'label' : 'Normal', 'value' : 'normal'},
-				{'label' : 'Directions', 'value' : 'directions'}
-			],
-			value='normal',
-			labelStyle={
-				'display' : 'inline-block', 
-				'padding-left' : 20
+		html.Div([
+			table.DataTable(
+				id='table-dropdown',
+				data=df.to_dict('records'),
+					columns=[
+						{'id': 'cities', 'name': '', 'presentation': 'dropdown'},
+					],
+					editable=True,
+					dropdown={
+						'cities' : {
+							'options': [
+								{'label': i, 'value': i} for i in all_cities
+							]
+						},
+					}
+				),
+		], className='two columns',
+			style={
+				'padding-left' : 20,
+				'padding-top' : 40,
+				'padding-bottom' : 20
 			}
-		)
-	], style={'padding-top' : 30, 'padding-left' : 30}),
-	html.Div([
-		dcc.Graph(
-			id='better-travel',
-		)
-	], style={'text-align' : 'center', 'padding' : 20})
+		),
+		html.Div([
+			html.Div([
+				dcc.RadioItems(
+					id='norm-direction',
+					options=[
+						{'label' : 'Normal', 'value' : 'normal'},
+						{'label' : 'Directions', 'value' : 'directions'}
+					],
+					value='normal',
+					labelStyle={
+						'display' : 'inline-block', 
+						'padding-left' : 20
+					}
+				)
+			], style={'padding-top' : 30, 'padding-left' : 30}),
+			html.Div([
+				dcc.Graph(
+					id='better-travel',
+					config={'toImageButtonOptions' : {'width' : None, 'height' : None}}
+				)
+			], style={'text-align' : 'center', 'padding' : 20})
+		], className='ten columns')
+	], className='row', style={})
 ])
 
 @app.callback(
 	Output(component_id='better-travel', component_property='figure'),
-	[Input(component_id='norm-direction', component_property='value')]
+	[Input(component_id='norm-direction', component_property='value'),
+		Input(component_id='table-dropdown', component_property='data')]
 )
-def get_least_distance(option_type):
+def get_least_distance(option_type, data):
+	lats = [india_dumped[i['cities']][0] for i in data]
+	lons = [india_dumped[i['cities']][1] for i in data]
+	place_names = [str(i['cities']) for i in data]
+
+	place_list = {i : j for (i, j) in zip([1, 2, 3, 4], place_names)}
+	place_coords = {i : j for (i, j) in zip(
+		place_names, [india_dumped[c] for c in place_names]
+	)}
+
+	center_lat = sum(lats) / len(lats)
+	center_lon = sum(lons) / len(lons)
+
 	geo_travel = GeoTraveller(
 		place_list=place_list,
 		place_coords=place_coords,
@@ -90,12 +114,7 @@ def get_least_distance(option_type):
 	place_path, dis = geo_travel.get_place_path()
 	order_places = geo_travel.order_places
 	order_path = geo_travel.order_path
-	coords_list = list(place_coords.values())
-	lats = [i[0] for i in coords_list]
-	lons = [i[1] for i in coords_list]
 	place_names = list(place_coords.keys())
-	# print(place_path)
-	# print(dis)
 
 	data = []
 	for each_join in range(len(order_path)):
@@ -146,17 +165,21 @@ def get_least_distance(option_type):
 			accesstoken=mapbox_access,
 			bearing=0,
 			center=dict(
-				lat=20.5937,
-				lon=78.9629
+				lat=center_lat,
+				lon=center_lon
 			),
 			pitch=0,
-			zoom=4,
+			zoom=3.5,
 			style='outdoors'
 		),
 		margin=dict(l=40, r=40, t=40, b=40)
 	)
 
-	return {'data' : data, 'layout' : layout}
+	result = {'data' : data, 'layout' : layout}
+	# plot_mpl(result)
+	# plot_mpl(result, image='png')
+
+	return result
 
 
 
