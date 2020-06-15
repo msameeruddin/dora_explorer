@@ -1,47 +1,27 @@
-import random
-import os
-import mpu
-import requests
 
-from tiny_explore import DoraTheExplorer
+from distance_locator import DistanceLocator
+from useful_plots import HTMLPlotter
 
+class GeoTraveller(DistanceLocator, HTMLPlotter):
+	def __init__(self, place_list):
+		self.place_list = self._get_noded_places(place_list=place_list)
+		self.place_coords = self._get_noded_coords(place_list=place_list)
 
-class GeoTraveller(object):
-	def __init__(self, place_list, place_coords, geo_token):
-		self.place_list = place_list
-		self.place_coords = place_coords
-		self.order_places = []
-		self.order_path = []
-		self.geo_token = geo_token
-		self.travel_mode = 'driving'
-
-	def get_place_path(self):
-		"""
-		returns a tuple with the shortest path and the minimum distance
-		"""
-		explore = DoraTheExplorer(
-			place_list=self.place_list,
-			place_coords=self.place_coords
-		)
-
-		path, dis = explore.find_shortest_path(source_city=2)
-		self.order_places = [self.place_list[int(i)] for i in path.split(' >> ')]
-		self.order_path = self.get_order_path(order_places=self.order_places)
-		place_path = ' >> '.join(self.order_places)
-
-		return place_path, dis
-
-	def get_order_path(self, order_places):
-		"""returns a list of lists with `from_` and `to_` names"""
-		order_path = [
-			[order_places[i], order_places[i + 1]] 
-			for i in range(0, len(order_places) - 1)
-		]
-
-		return order_path
-
+	
 	def get_coords_joining(self, from_, to_):
-		"""returns a tuple of `latitudes` and `longitudes` for joining all the coords"""
+		"""
+		Get the coordinate values `lats` and `lons`
+		:param from_: string
+		:param to_: string
+		:return: tuple[list[float]]
+
+		Examples
+		--------
+		>>> # munich - (48.1372, 11.5756)
+		>>> # berlin - (52.5186, 13.4083)
+		>>> get_coords_joining('munich', 'berlin')
+		([48.1372, 52.5186], [11.5756, 13.4083])
+		"""
 		from_coords = self.place_coords[from_]
 		to_coords = self.place_coords[to_]
 
@@ -50,30 +30,137 @@ class GeoTraveller(object):
 
 		return lats, lons
 
-	def get_travel_route(self, from_, to_):
-		"""returns a tuple of `latitudes` and `longitudes` showing the exact route"""
-		from_lat, from_lon = self.place_coords[from_]
-		to_lat, to_lon = self.place_coords[to_]
 
-		map_url = 'https://api.mapbox.com/directions/v5/mapbox/{}/{},{};{},{}?geometries=geojson&access_token={}'.format(
-			self.travel_mode, from_lon, from_lat, to_lon, to_lat, self.geo_token
+	def get_order_path(self, order_places):
+		"""
+		Get the order path in the form of [['a', 'b'], ['b', 'c'], ['c', 'a']]
+		:param order_places: list
+		:return: list[list[string]]
+		"""
+		order_path = [
+			[order_places[i], order_places[i + 1]] 
+			for i in range(0, len(order_places) - 1)
+		]
+
+		return order_path
+
+	
+	def get_travel_route(self, from_, to_, geo_token=None):
+		"""
+		Get the travel route - coordinates with respect to the mode `driving`
+		using `mapbox` API
+		:param from_: string
+		:param to_: string
+		:param geo_token: string=None
+		:return: tuple[list[float]]
+
+		Examples
+		--------
+		>>> # 'Red Fort' - [28.6562, 77.2410]
+		>>> # 'Pink City' - [26.9124, 75.7873]
+		>>> get_travel_route('Red Fort', 'Pink City')
+		([28.6562, 26.9124], [77.241, 75.7873])
+		>>> get_travel_route('Red Fort', 'Pink City', geo_token='<map_box_api>')
+		(	
+			[28.65834, 28.657799, 28.655979, ..., 26.912434], 
+			[77.238106, 77.236954, 77.236847, ..., 75.78727]
 		)
+		"""
 
-		open_map = requests.get(url=map_url)
-		map_js = open_map.json()
+		if geo_token:
+			## get direction route with the mode `driving-traffic`
+			import requests
 
-		lats = []; lons = []
-		for ks in map_js['routes']:
-			for k, v in ks.items():
-				if k == 'geometry':
-					for each_k, each_v in v.items():
-						if each_k == 'coordinates':
-							for each_loc in each_v:
-								lons.append(each_loc[0])
-								lats.append(each_loc[1])
+			from_lat, from_lon = self.place_coords[from_]
+			to_lat, to_lon = self.place_coords[to_]
 
+			map_url = 'https://api.mapbox.com/directions/v5/mapbox/{}/{},{};{},{}?geometries=geojson&access_token={}'.format(
+				'driving-traffic', from_lon, from_lat, to_lon, to_lat, geo_token
+			)
+
+			open_map = requests.get(url=map_url)
+			map_js = open_map.json()
+
+			lats = []; lons = []
+			for ks in map_js['routes']:
+				for k, v in ks.items():
+					if k == 'geometry':
+						for each_k, each_v in v.items():
+							if each_k == 'coordinates':
+								for each_loc in each_v:
+									lons.append(each_loc[0])
+									lats.append(each_loc[1])
+
+			return lats, lons
+
+		# if not geo_token
+		lats, lons = self.get_coords_joining(from_=from_, to_=to_)
 		return lats, lons
 
+
+	def get_route_visuals(self, order_path, geo_token=None, with_directions=False):
+		"""
+		Visualize the route direction of the map - html format
+		:param order_path: list[list[string]]
+		:param geo_token: string
+		:return: bool (after successfully getting the output as html)
+		"""
+		import plotly.graph_objects as go
+
+		place_lats = [self.place_coords[i][0] for i in self.place_list.values()]
+		place_lons = [self.place_coords[i][1] for i in self.place_list.values()]
+		data = []
+		
+		if geo_token:
+			## Mapbox plot showing the locations and the shortest path
+			center_lat = sum(place_lats) / len(place_lats)
+			center_lon = sum(place_lons) / len(place_lons)
+
+			for each_join in range(len(order_path)):
+				from_, to_ = order_path[each_join]
+				if with_directions is True:
+					lats_, lons_ = self.get_travel_route(from_=from_, to_=to_, geo_token=geo_token)
+				else:
+					lats_, lons_ = self.get_travel_route(from_=from_, to_=to_, geo_token=None)
+				data.append(self.do_map_line_plot(go=go, lats=lats_, lons=lons_, width=2.5))
+			
+			data.append(
+				self.do_map_marker_plot(
+					go=go, 
+					lats=place_lats,
+					lons=place_lons,
+					size=15,
+					text_list=list(self.place_list.values())
+				)
+			)
+			layout = self.do_map_layout(
+				go=go, 
+				title='Geo - Explorer', 
+				accesstoken=geo_token, 
+				center_lat=center_lat, 
+				center_lon=center_lon, 
+				style='outdoors'
+			)
+
+			fig = go.Figure(data=data, layout=layout)
+			fig.write_html('explore.html')
+
+		else:
+			## normal Scatter plot showind th shortest path
+			for each_join in range(len(order_path)):
+				from_, to_ = order_path[each_join]
+				lats_, lons_ = self.get_travel_route(from_=from_, to_=to_)
+				data.append(self.do_line_scatter(go=go, x=lats_, y=lons_, width=2.5))
+
+			data.append(
+				self.do_marker_scatter(go=go, x=lats_, y=lons_, size=15)
+			)
+			layout = self.do_scatter_layout(go=go, title='Geo - Explorer')
+
+			fig = go.Figure(data=data)
+			fig.write_html('explore.html')
+
+		return True
 
 
 
@@ -87,23 +174,27 @@ class GeoTraveller(object):
 
 
 if __name__ == '__main__':
-	place_list = {
-		1 : 'Red Fort', 
-		2 : 'Pink City', 
-		3 : 'Goa', 
-		4 : 'Hawa Mahal'
-	}
+	# place_list = {
+	# 	1 : 'Red Fort', 
+	# 	2 : 'Pink City', 
+	# 	3 : 'Goa', 
+	# 	4 : 'Hawa Mahal'
+	# }
 
-	place_coords = {
-		'Red Fort' : [28.6562, 77.2410],
-		'Pink City' : [26.9124, 75.7873],
-		'Goa' : [15.2993, 74.1240],
-		'Hawa Mahal' : [26.9239, 75.8267]
-	}
+	# place_coords = {
+	# 	'Red Fort' : [28.6562, 77.2410],
+	# 	'Pink City' : [26.9124, 75.7873],
+	# 	'Goa' : [15.2993, 74.1240],
+	# 	'Hawa Mahal' : [26.9239, 75.8267]
+	# }
 
-	travel = GeoTraveller(place_list=place_list, place_coords=place_coords)
-	place_path, dis = travel.get_place_path()
-	print(place_path)
-	print(dis)
-	print(travel.order_places)
-	print(travel.order_path)
+	place_list = ['Punch', 'Zunheboto', 'Zaidpur']
+
+	travel = GeoTraveller(
+		place_list=place_list, 
+	)
+
+	route = travel.get_travel_route(from_='Punch', to_='Zunheboto')
+	print(route)
+
+	print(travel.get_order_path(place_list))

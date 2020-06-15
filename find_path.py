@@ -1,14 +1,16 @@
 
 class ShortestPathFinder():
-	def __init__(self, source, non_source_cities, non_end_dis):
-		self.source = source
-		self.non_source_cities = non_source_cities
-		self.non_end_dis = non_end_dis
+	def __init__(self, source):
+		pass
 
-
+	
 	def get_clubbed(self, nen, osn, ned):
 		"""
-		returns a list of nodes along with the corresponding distances
+		Get the zip of nodes and the distances that is obtained
+		:param nen: list[list[any(int, float)]] - [[1, 1.3], [3, 21.2]]
+		:param osn: list[list[int]] - [[1, 2], [3, 2]]
+		:param ned: list[list[any(int, float)]] - [[1, 1.3], [3, 21.2]]
+		:return: list[list, list] - [[], []]
 		"""
 		osn_len = len(osn)
 		nen_len = len(nen)
@@ -18,13 +20,19 @@ class ShortestPathFinder():
 		else:
 			possible_nodes = []
 
-		clubbed = map(list, zip(possible_nodes, self.non_end_dis)) if possible_nodes else []
+		clubbed = map(list, zip(possible_nodes, ned)) if possible_nodes else []
 		return clubbed
 
 
-	def get_sub_paths(self, nen, osn, ned):
+	def get_sub_paths(self, sc, nen, osn, ned, nsc):
 		"""
-		returns a string which is the sub_path of the minimal distance 
+		Get the sub-path without the source node
+		:param sc: int
+		:param nen: list[list[any(int, float)]] - [[1, 1.3], [3, 21.2]]
+		:param osn: list[list[int]] - [[1, 2], [3, 2]]
+		:param ned: list[list[any(int, float)]] - [[1, 1.3], [3, 21.2]]
+		:param nsc: list[int] - [1, 2, 3]
+		:return: list[string] - '1 >> 2 >> 3'
 		"""
 		clubbed = self.get_clubbed(nen=nen, osn=osn, ned=ned)
 
@@ -41,12 +49,12 @@ class ShortestPathFinder():
 			sub_paths = []
 			for mn in min_nodes:
 				smn = set(mn)
-				snsc = set(self.non_source_cities)
+				snsc = set(nsc)
 				sub_source = (snsc - smn).pop()
 				sp = str(sub_source) + ' >>'
 				for i in mn:
 					sp += ' ' + str(i) + ' >>'
-				sp = sp + ' ' + str(self.source)
+				sp = sp + ' ' + str(sc)
 				sub_paths.append(sp)
 
 			return sub_paths
@@ -54,13 +62,18 @@ class ShortestPathFinder():
 		return []
 
 
-	def get_shortest_path(self, nen, osn, ned, end_dis):
+	def get_shortest_path(self, sc, nen, osn, ned, nsc, end_dis):
 		"""
-		returns a tuple showing the exact shortest path and 
-		the minimal distance required to travel all the cities
-		exactly once
+		Get the shortest path including the source node
+		:param sc: int
+		:param nen: list[list[any(int, float)]] - [[1, 1.3], [3, 21.2]]
+		:param osn: list[list[int]] - [[1, 3], [3, 4]]
+		:param ned: list[list[any(int, float)]] - [[1, 1.4], [4.5, 6.5]]
+		:param nsc: list[int] - [1, 2, 3]
+		:param end_dis: list[any(float, int)] - [12.3, 2, 32.1]
+		:return: string - '1 >> 2 >> 3'
 		"""
-		sub_paths = self.get_sub_paths(nen=nen, osn=osn, ned=ned)
+		sub_paths = self.get_sub_paths(sc=sc, nen=nen, osn=osn, ned=ned, nsc=nsc)
 		min_dis_index = end_dis.index(min(end_dis))
-		shortest_path = str(self.source) + ' >> ' + sub_paths[min_dis_index]
-		return shortest_path, end_dis[min_dis_index]
+		shortest_path = str(sc) + ' >> ' + sub_paths[min_dis_index]
+		return shortest_path
