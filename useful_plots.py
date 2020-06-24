@@ -8,9 +8,9 @@ class HTMLPlotter(object):
 		"""
 		Draw the map plot joining the line between two locations
 		:param go: plotly object
-		:param lats: list[float]
-		:param lons: list[float]
-		:param width: any(int, float)
+		:param list lats: List of latitudes
+		:param list lons: List of longitudes
+		:param (int, float) width: line width
 		:return: plotly object
 		"""
 		chunk = go.Scattermapbox(
@@ -30,11 +30,11 @@ class HTMLPlotter(object):
 		"""
 		Draw the map plot (scrtter plot) of locations (marker)
 		:param go: plotly object
-		:param lats: list[float]
-		:param lons: list[float]
-		:param size: any(int, float)
-		:param text_list: list[string]
-		:param (default) color: string='#78159a'
+		:param list lats: List of latitudes
+		:param list lons: List of longitudes
+		:param (int, float) size: Size of the marker
+		:param list text_list: List of places
+		:param string color: Color of the marker ('#78159a')
 		:return: plotly object
 		"""
 		chunk = go.Scattermapbox(
@@ -55,11 +55,11 @@ class HTMLPlotter(object):
 		"""
 		Design the layout of the plot
 		:param go: plotly object
-		:param title: string
-		:param accesstoken: string
-		:param center_lat: float
-		:param center_lon: float
-		:param style: string
+		:param string title: Title of the plot
+		:param string accesstoken: Mapbox API key
+		:param float center_lat:
+		:param float center_lon:
+		:param string style: Style of the map plot
 		:return: plotly object
 		"""
 		chunk_layout = go.Layout(
@@ -88,10 +88,10 @@ class HTMLPlotter(object):
 		"""
 		Draw the normal scatter plot with markers
 		:param go: plotly object
-		:param x: list[any(int, float)],
-		:param y: list[any(int, float)],
-		:param size: any(int, float),
-		:param color: string='#78159a'
+		:param list x: List of values
+		:param list y: List of values
+		:param (int, float) size: Size of the marker
+		:param string color: Color of the marker ('#78159a')
 		:return: plotly object
 		"""
 		chunk = go.Scatter(
@@ -110,9 +110,9 @@ class HTMLPlotter(object):
 		"""
 		Draw the normal scatter plot with lines
 		:param go: plotly object
-		:param x: list[any(int, float)],
-		:param y: list[any(int, float)],
-		:param width: any(int, float)
+		:param list x: List of values
+		:param list y: List of values
+		:param (int, float) width: Width of the line
 		:return: plotly object
 		"""
 		chunk = go.Scatter(
@@ -130,7 +130,7 @@ class HTMLPlotter(object):
 		"""
 		Design the layout - scatter plot
 		:param go: plotly object
-		:param title: string
+		:param string title: Title of the plot
 		"""
 		chunk_layout = go.Layout(
 			title=title,

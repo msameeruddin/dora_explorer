@@ -3,16 +3,14 @@ from distance_locator import DistanceLocator
 from useful_plots import HTMLPlotter
 
 class GeoTraveller(DistanceLocator, HTMLPlotter):
-	def __init__(self, place_list):
-		self.place_list = self._get_noded_places(place_list=place_list)
-		self.place_coords = self._get_noded_coords(place_list=place_list)
-
+	def __init__(self):
+		pass
 	
 	def get_coords_joining(self, from_, to_):
 		"""
 		Get the coordinate values `lats` and `lons`
-		:param from_: string
-		:param to_: string
+		:param string from_: from place
+		:param string to_: to place
 		:return: tuple[list[float]]
 
 		Examples
@@ -22,8 +20,9 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 		>>> get_coords_joining('munich', 'berlin')
 		([48.1372, 52.5186], [11.5756, 13.4083])
 		"""
-		from_coords = self.place_coords[from_]
-		to_coords = self.place_coords[to_]
+		place_coords = self._get_noded_coords(place_list=[from_, to_])
+		from_coords = place_coords[from_]
+		to_coords = place_coords[to_]
 
 		lats = [l[0] for l in [from_coords, to_coords]]
 		lons = [l[1] for l in [from_coords, to_coords]]
@@ -49,9 +48,9 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 		"""
 		Get the travel route - coordinates with respect to the mode `driving`
 		using `mapbox` API
-		:param from_: string
-		:param to_: string
-		:param geo_token: string=None
+		:param string from_: from place
+		:param string to_: to place
+		:param string geo_token: Mapbox API
 		:return: tuple[list[float]]
 
 		Examples
@@ -71,8 +70,9 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 			## get direction route with the mode `driving-traffic`
 			import requests
 
-			from_lat, from_lon = self.place_coords[from_]
-			to_lat, to_lon = self.place_coords[to_]
+			place_coords = self._get_noded_coords(place_list=[from_, to_])
+			from_lat, from_lon = place_coords[from_]
+			to_lat, to_lon = place_coords[to_]
 
 			map_url = 'https://api.mapbox.com/directions/v5/mapbox/{}/{},{};{},{}?geometries=geojson&access_token={}'.format(
 				'driving-traffic', from_lon, from_lat, to_lon, to_lat, geo_token
@@ -94,21 +94,24 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 			return lats, lons
 
 		# if not geo_token
+		# print('MapBox API required for getting the route direction ... ')
 		lats, lons = self.get_coords_joining(from_=from_, to_=to_)
 		return lats, lons
 
 
-	def get_route_visuals(self, order_path, geo_token=None, with_directions=False):
+	def get_route_visuals(self, place_list, order_path, geo_token=None, with_directions=False):
 		"""
 		Visualize the route direction of the map - html format
-		:param order_path: list[list[string]]
-		:param geo_token: string
+		:param list place_list: List of place names
+		:param list order_path: Returns in the form [['a', 'b'], ['b', 'c'], ['c', 'a']]
+		:param string geo_token: Mapbox API
 		:return: bool (after successfully getting the output as html)
 		"""
 		import plotly.graph_objects as go
 
-		place_lats = [self.place_coords[i][0] for i in self.place_list.values()]
-		place_lons = [self.place_coords[i][1] for i in self.place_list.values()]
+		place_coords = self._get_noded_coords(place_list=place_list)
+		place_lats = [place_coords[i][0] for i in place_list]
+		place_lons = [place_coords[i][1] for i in place_list]
 		data = []
 		
 		if geo_token:
@@ -130,7 +133,7 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 					lats=place_lats,
 					lons=place_lons,
 					size=15,
-					text_list=list(self.place_list.values())
+					text_list=place_list
 				)
 			)
 			layout = self.do_map_layout(
@@ -146,7 +149,7 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 			fig.write_html('explore.html')
 
 		else:
-			## normal Scatter plot showind th shortest path
+			## normal Scatter plot showing the shortest path
 			for each_join in range(len(order_path)):
 				from_, to_ = order_path[each_join]
 				lats_, lons_ = self.get_travel_route(from_=from_, to_=to_)
@@ -173,28 +176,28 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 
 
 
-if __name__ == '__main__':
-	# place_list = {
-	# 	1 : 'Red Fort', 
-	# 	2 : 'Pink City', 
-	# 	3 : 'Goa', 
-	# 	4 : 'Hawa Mahal'
-	# }
+# if __name__ == '__main__':
+# 	# place_list = {
+# 	# 	1 : 'Red Fort', 
+# 	# 	2 : 'Pink City', 
+# 	# 	3 : 'Goa', 
+# 	# 	4 : 'Hawa Mahal'
+# 	# }
 
-	# place_coords = {
-	# 	'Red Fort' : [28.6562, 77.2410],
-	# 	'Pink City' : [26.9124, 75.7873],
-	# 	'Goa' : [15.2993, 74.1240],
-	# 	'Hawa Mahal' : [26.9239, 75.8267]
-	# }
+# 	# place_coords = {
+# 	# 	'Red Fort' : [28.6562, 77.2410],
+# 	# 	'Pink City' : [26.9124, 75.7873],
+# 	# 	'Goa' : [15.2993, 74.1240],
+# 	# 	'Hawa Mahal' : [26.9239, 75.8267]
+# 	# }
 
-	place_list = ['Punch', 'Zunheboto', 'Zaidpur']
+# 	place_list = ['Punch', 'Zunheboto', 'Zaidpur']
 
-	travel = GeoTraveller(
-		place_list=place_list, 
-	)
+# 	travel = GeoTraveller(
+# 		place_list=place_list, 
+# 	)
 
-	route = travel.get_travel_route(from_='Punch', to_='Zunheboto')
-	print(route)
+# 	route = travel.get_travel_route(from_='Punch', to_='Zunheboto')
+# 	print(route)
 
-	print(travel.get_order_path(place_list))
+# 	print(travel.get_order_path(place_list))
