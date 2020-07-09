@@ -1,4 +1,4 @@
-from india_data import india_dumped
+from dora_explorer.geo_data.india_data import india_dumped
 
 class LocationHelper(object):
 	def __init__(self):

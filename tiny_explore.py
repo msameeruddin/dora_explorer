@@ -1,15 +1,19 @@
 
-from find_path import ShortestPathFinder
-from travel_places import GeoTraveller
+from dora_explorer.find_path import ShortestPathFinder
+from dora_explorer.travel_places import GeoTraveller
 
 class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 	def __init__(self, place_list):
 		self.place_list = self._get_noded_places(place_list=place_list)
 		self.cities_count = len(self.place_list)
 		self.num_cities = self.set_distance_matrix(place_list=self.place_list)
+		
 		self.one_step_nodes = []
 		self.final_step_nodes = []
 		self.end_distances = []
+
+		self.place_values = place_list
+		self.place_keys = list(self.place_list.keys())
 
 
 	def get_cost_val(self, row, col, source):
@@ -20,6 +24,19 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 		:parma int source: Source node 
 		:return int: corresponding value 
 		"""
+		
+		if isinstance(source, str):
+			if source in self.place_values:
+				source = self.place_keys[self.place_values.index(source)]
+		else:
+			source = source
+
+		if isinstance(row, str):
+			if row in self.place_values:
+				row = self.place_keys[self.place_values.index(row)]
+			else:
+				row = row
+		
 		if col == 0:
 			col = source
 			return self.num_cities[(row, col)]
@@ -53,6 +70,17 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 		 [3, 2, 4]
 		 [4, 2, 3]]
 		"""
+		if isinstance(source_city, int):
+			if source_city > self.cities_count:
+				return []
+
+		elif isinstance(source_city, str):
+			if source_city in self.place_values:
+				source_city = self.place_keys[self.place_values.index(source_city)]
+
+		else:
+			source_city = source_city
+
 		all_possibilities = self.get_possibilities()
 		non_source_cities = all_possibilities[source_city]
 		possible_paths = []
@@ -122,18 +150,21 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 		:return: float
 		"""
 		possible_paths = self.get_non_source_nodes(source_city)
-		self.solve_tsp(
-			main_city=source_city,
-			dummy_city=source_city,
-			cities=possible_paths[0]
-		)
-		end_dis = self.end_distances[-1]
 
-		self.one_step_nodes = []
-		self.final_step_nodes = []
-		self.end_distances = []
+		if possible_paths:
+			self.solve_tsp(
+				main_city=source_city,
+				dummy_city=source_city,
+				cities=possible_paths[0]
+			)
+			end_dis = self.end_distances[-1]
 
-		return round(min(end_dis), 2)
+			self.one_step_nodes = []
+			self.final_step_nodes = []
+			self.end_distances = []
+			
+			return round(min(end_dis), 2)
+		return None
 	
 
 	def find_shortest_path(self, source_city):
@@ -142,53 +173,69 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 		:param int source_city: 1
 		:return string: "1 >> 2 >> 4 >> 3 >> 1"
 		"""
+		if isinstance(source_city, str):
+			if source_city in self.place_values:
+				source_city = self.place_keys[self.place_values.index(source_city)]
+		else:
+			source_city = source_city
+		
 		if self.cities_count == 4:
 			possible_paths = self.get_non_source_nodes(source_city)
-			
-			self.solve_tsp(
-				main_city=source_city,
-				dummy_city=source_city,
-				cities=possible_paths[0]
-			)
 
-			end_dis = self.end_distances[-1]
-			non_end_nodes = self.final_step_nodes[:len(self.final_step_nodes) - 1]
-			non_end_dis = self.end_distances[:len(self.end_distances) - 1]
+			if possible_paths:			
+				self.solve_tsp(
+					main_city=source_city,
+					dummy_city=source_city,
+					cities=possible_paths[0]
+				)
 
-			shortest_path = self.get_shortest_path(
-				sc=source_city, 
-				nen=non_end_nodes,
-				osn=self.one_step_nodes,
-				ned=non_end_dis,
-				nsc=possible_paths[0],
-				end_dis=end_dis
-			)
+				end_dis = self.end_distances[-1]
+				non_end_nodes = self.final_step_nodes[:len(self.final_step_nodes) - 1]
+				non_end_dis = self.end_distances[:len(self.end_distances) - 1]
 
-			self.one_step_nodes = []
-			self.final_step_nodes = []
-			self.end_distances = []
+				shortest_path = self.get_shortest_path(
+					sc=source_city, 
+					nen=non_end_nodes,
+					osn=self.one_step_nodes,
+					ned=non_end_dis,
+					nsc=possible_paths[0],
+					end_dis=end_dis
+				)
 
-			return shortest_path
+				self.one_step_nodes = []
+				self.final_step_nodes = []
+				self.end_distances = []
+
+				return shortest_path
 		
 		return """cannot find path for {} cities""".format(self.cities_count)
 
 
-	def get_path(self, source_city, num_path=False, map_token=None, with_plot=False, with_map=False, with_directions=False):
+	def get_path(self, source_city, num_path=False, geo_token=None, with_plot=False, with_map=False, with_directions=False):
 		"""
 		Get the shortes path based on the actual city names
 		:param int source_city: 1
 		:param bool num_path: Returns a num shortest path if available
-		:param NoneType map_token: mapbox API required
+		:param NoneType geo_token: mapbox API required
 		:param bool with_plot: Retursn the normal plot if given True
 		:param bool with_map: Returns the map plot in html format if available
 		:param bool with_directions: Returns the map plot with mapbox directions if available
 		:return string: "{city_name} >> {city_name} >> {city_name} >> {city_name} >> {city_name}"
-		"""
-		
+		"""		
 		path = self.find_shortest_path(source_city)
 
 		# currently limited to any four standard cities of India
 		if self.cities_count == 4:
+			
+			if isinstance(source_city, int):
+				if source_city > self.cities_count:
+					return "Number of cities given - {}.\nFound source_city happened to be {}".format(self.cities_count, source_city)
+				else: source_city = source_city
+
+			if isinstance(source_city, str):
+				if source_city in self.place_values:
+					source_city = self.place_keys[self.place_values.index(source_city)]
+
 
 			if not num_path:
 				order_places = [self.place_list[int(i)] for i in path.split(' >> ')]
@@ -196,63 +243,64 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 				place_path = ' >> '.join(order_places)
 				
 				# write the plot result in html format
-				travelling_places = list(self.place_list.values())
+				travelling_places = self.place_values
 				
-				if with_plot and map_token:
+				if with_plot and geo_token:
 					if with_directions:
 						self.get_route_visuals(
 							place_list=travelling_places, order_path=order_path, 
-							geo_token=map_token, with_directions=True)
+							geo_token=geo_token, with_directions=True)
 					else:
-						self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=map_token)
+						self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=geo_token)
 					print('plot is saved successfully ... ')
 				
 				elif with_plot:
-					if with_map and map_token:
+					if with_map and geo_token:
 						if with_directions:
 							self.get_route_visuals(
 								place_list=travelling_places, order_path=order_path, 
-								geo_token=map_token, with_directions=True)
+								geo_token=geo_token, with_directions=True)
 						else:
-							self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=map_token)
+							self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=geo_token)
 					else:
 						print('MapBox API required for getting map result ... ')
 						self.get_route_visuals(place_list=travelling_places, order_path=order_path)
 					print('plot is saved successfully ... ')
 
 				elif with_map:
-					if map_token and with_directions:
+					if geo_token and with_directions:
 						self.get_route_visuals(
 							place_list=travelling_places, order_path=order_path, 
-							geo_token=map_token, with_directions=True)
-					elif map_token and not with_directions:
-						self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=map_token)
+							geo_token=geo_token, with_directions=True)
+					elif geo_token and not with_directions:
+						self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=geo_token)
 					else:
 						print('MapBox API required for getting map result ... ')
 						self.get_route_visuals(place_list=travelling_places, order_path=order_path)
 					print('plot is saved successfully ... ')
 
-				elif map_token:
+				elif geo_token:
 					if with_directions:
 						self.get_route_visuals(
 							place_list=travelling_places, order_path=order_path, 
-							geo_token=map_token, with_directions=True)
+							geo_token=geo_token, with_directions=True)
 					else:
-						self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=map_token)
+						self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=geo_token)
 					print('plot is saved successfully ... ')
 
 				elif with_directions:
-					if map_token:
+					if geo_token:
 						self.get_route_visuals(
 							place_list=travelling_places, order_path=order_path, 
-							geo_token=map_token, with_directions=True)
+							geo_token=geo_token, with_directions=True)
 					else:
 						print('MapBox API required for getting map result ... ')
 						self.get_route_visuals(place_list=travelling_places, order_path=order_path)
 					print('plot is saved successfully ... ')
 				
 				return place_path
-		return path
+			
+			return path
 
 
 
@@ -269,13 +317,13 @@ if __name__ == '__main__':
 	)
 
 	with open('mapbox_token.txt', 'r') as mk:
-		map_token = mk.read()
+		geo_token = mk.read()
 
-
-	dis = explore.get_min_dis(source_city=2)
-	print(dis)
-	print(explore.get_path(source_city=2, num_path=True))
-	ft_dis = explore.get_distance(from_='Srinagar', to_='Kanniyakumari')
-	print(ft_dis)
-	route = explore.get_travel_route(from_='Srinagar', to_='Kanniyakumari', geo_token=map_token)
-	print(route)
+	# dis = explore.get_min_dis(source_city="Mumbai")
+	# print(dis)
+	# print(explore.get_path(source_city=1, num_path=True))
+	# print(explore.get_path(source_city="Mumbai", num_path=False))
+	# ft_dis = explore.get_distance(from_='Srinagar', to_='Kanniyakumari')
+	# print(ft_dis)
+	# route = explore.get_travel_route(from_='Srinagar', to_='Kanniyakumari', geo_token=geo_token)
+	# print(route)

@@ -1,6 +1,6 @@
 
-from distance_locator import DistanceLocator
-from useful_plots import HTMLPlotter
+from dora_explorer.distance_locator import DistanceLocator
+from dora_explorer.useful_plots import HTMLPlotter
 
 class GeoTraveller(DistanceLocator, HTMLPlotter):
 	def __init__(self):

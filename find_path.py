@@ -7,9 +7,9 @@ class ShortestPathFinder():
 	def get_clubbed(self, nen, osn, ned):
 		"""
 		Get the zip of nodes and the distances that is obtained
-		:param nen: list[list[any(int, float)]] - [[1, 1.3], [3, 21.2]]
-		:param osn: list[list[int]] - [[1, 2], [3, 2]]
-		:param ned: list[list[any(int, float)]] - [[1, 1.3], [3, 21.2]]
+		:param list nen: Stands for non_end_nodes - [[[3, 4], [3, 5]], [[4, 3], [4, 5]], [] ...]
+		:param list osn: Stands for one_step_nodes - [[4, 5], [5, 4], [3, 5], [5, 3], [], []]
+		:param list ned: Stands for non_end_distances  - [[1, 1.3], [3, 21.2], [], []]
 		:return: list[list, list] - [[], []]
 		"""
 		osn_len = len(osn)
@@ -27,12 +27,12 @@ class ShortestPathFinder():
 	def get_sub_paths(self, sc, nen, osn, ned, nsc):
 		"""
 		Get the sub-path without the source node
-		:param sc: int
-		:param nen: list[list[any(int, float)]] - [[1, 1.3], [3, 21.2]]
-		:param osn: list[list[int]] - [[1, 2], [3, 2]]
-		:param ned: list[list[any(int, float)]] - [[1, 1.3], [3, 21.2]]
-		:param nsc: list[int] - [1, 2, 3]
-		:return: list[string] - '1 >> 2 >> 3'
+		:param int sc: Source node
+		:param list nen: Stands for non_end_nodes - [[[3, 4], [3, 5]], [[4, 3], [4, 5]], [] ...]
+		:param list osn: Stands for one_step_nodes - [[4, 5], [5, 4], [3, 5], [5, 3], [], []]
+		:param list ned: Stands for non_end_distances  - [[1, 1.3], [3, 21.2], [], []]
+		:param list nsc: Stands for non_source - [2, 3, 4, 5]
+		:return: string - '1 >> 2 >> 3'
 		"""
 		clubbed = self.get_clubbed(nen=nen, osn=osn, ned=ned)
 
@@ -65,12 +65,12 @@ class ShortestPathFinder():
 	def get_shortest_path(self, sc, nen, osn, ned, nsc, end_dis):
 		"""
 		Get the shortest path including the source node
-		:param sc: int
-		:param nen: list[list[any(int, float)]] - [[1, 1.3], [3, 21.2]]
-		:param osn: list[list[int]] - [[1, 3], [3, 4]]
-		:param ned: list[list[any(int, float)]] - [[1, 1.4], [4.5, 6.5]]
-		:param nsc: list[int] - [1, 2, 3]
-		:param end_dis: list[any(float, int)] - [12.3, 2, 32.1]
+		::param int sc: Source node
+		:param list nen: Stands for non_end_nodes - [[[3, 4], [3, 5]], [[4, 3], [4, 5]], [] ...]
+		:param list osn: Stands for one_step_nodes - [[4, 5], [5, 4], [3, 5], [5, 3], [], []]
+		:param list ned: Stands for non_end_distances  - [[1, 1.3], [3, 21.2], [], []]
+		:param list nsc: Stands for non_source - [2, 3, 4, 5]
+		:param list end_dis: End distances - [12.3, 2, 32.1]
 		:return: string - '1 >> 2 >> 3'
 		"""
 		sub_paths = self.get_sub_paths(sc=sc, nen=nen, osn=osn, ned=ned, nsc=nsc)
