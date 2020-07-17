@@ -42,7 +42,7 @@ path = explore.get_path(source_city='Mumbai', with_map=True, with_directions=Tru
 print(path) # Mumbai >> Delhi >> Hyderabad >> Hindupur >> Mumbai
 ```
 
-**Note:** The source_city `arg` can also be given an integer. Either `1` or `2` or `3` or `4` as in a list of four places is passed.
+**Note:** The `source_city` param can also be given an integer. Either `1` or `2` or `3` or `4` as in a list of four places is passed.
 
 ```python
 from dora_explorer.tiny_explore import DoraTheExplorer
