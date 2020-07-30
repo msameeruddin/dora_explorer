@@ -12,7 +12,7 @@ from_ = 'Hindupur'
 to_ = 'Bengaluru'
 
 # required geo_token
-geo_token = 'pk.eyJ1IjoiY2hhb3RpYy1lbmlnbWEiLCJhIjoiY2tiaHJ0ejV1MDg5MjJ6cnBxY3AzN3NhNyJ9.ux-_MerZgOxARVfeCPHqRw'
+geo_token = ''
 # route = travel.get_travel_route(from_='Lucknow', to_='Noida', geo_token=geo_token)
 
 # print(route)
