@@ -6,13 +6,19 @@ We have known about one of the famous problems in mathematics - graph theory tha
 
 A typical example can be seen below. When selected 4 places that belong to India the result is obtained having the shortest path to cover the places. The path is just a straight line between the cities.
 
-<img src="https://user-images.githubusercontent.com/63333753/87243481-e4e89980-c453-11ea-8d51-4cd3bad43109.png">
+![with_map](https://user-images.githubusercontent.com/63333753/87243481-e4e89980-c453-11ea-8d51-4cd3bad43109.png)
 
 What if we want to get the actual route direction from each city that is joining another city?.
 
 ![with_directions](https://user-images.githubusercontent.com/63333753/87244009-72c68380-c458-11ea-964c-99c5f63406c6.png)
 
 For getting the map results, it is important to have Mapbox API which is a free API. To get the API - register on [mapbox website](https://www.mapbox.com/). Once registered, create a secret token by clicking `Create a token` button by navigating to this [page](https://account.mapbox.com/). Save the token as it will be needed for generating the map results.
+
+## Installation
+
+```
+pip install dora-explorer
+```
 
 ## Implementation
 

@@ -7,13 +7,18 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 		self.place_list = self._get_noded_places(place_list=place_list)
 		self.cities_count = len(self.place_list)
 		self.num_cities = self.set_distance_matrix(place_list=self.place_list)
+		self.place_values = place_list
+		self.place_keys = list(self.place_list.keys())
 		
 		self.one_step_nodes = []
 		self.final_step_nodes = []
 		self.end_distances = []
 
-		self.place_values = place_list
-		self.place_keys = list(self.place_list.keys())
+		## validation if the places belong to the same country
+		loc_place_coords = self._get_noded_coords(place_list=self.place_values)
+		loc_vals = list(loc_place_coords.values())
+		country_codes = [loc_[-1] for loc_ in loc_vals]
+		self.is_same_country = False if (len(set(country_codes)) != 1) else True
 
 
 	def get_cost_val(self, row, col, source):
@@ -149,6 +154,8 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 		:param int source_city:
 		:return: float
 		"""
+		if self.is_same_country is False:
+			return "Cannot find the minimum distance to cover the cities {}, as they do not belong to the same country.".format(self.place_values)
 		possible_paths = self.get_non_source_nodes(source_city)
 
 		if possible_paths:
@@ -222,8 +229,10 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 		:param bool with_directions: Returns the map plot with mapbox directions if available
 		:return string: "{city_name} >> {city_name} >> {city_name} >> {city_name} >> {city_name}"
 		"""		
+		if self.is_same_country is False:
+			return "Cannot find the shortest path, as the cities {} do not belong to the same country.".format(self.place_values)
+		
 		path = self.find_shortest_path(source_city)
-
 		# currently limited to any four standard cities of India
 		if self.cities_count == 4:
 			
@@ -248,54 +257,94 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 				if with_plot and geo_token:
 					if with_directions:
 						self.get_route_visuals(
-							place_list=travelling_places, order_path=order_path, 
-							geo_token=geo_token, with_directions=True)
+							place_list=travelling_places, 
+							order_path=order_path, 
+							geo_token=geo_token, 
+							with_directions=True
+						)
 					else:
-						self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=geo_token)
+						self.get_route_visuals(
+							place_list=travelling_places, 
+							order_path=order_path, 
+							geo_token=geo_token
+						)
 					print('plot is saved successfully ... ')
 				
 				elif with_plot:
 					if with_map and geo_token:
 						if with_directions:
 							self.get_route_visuals(
-								place_list=travelling_places, order_path=order_path, 
-								geo_token=geo_token, with_directions=True)
+								place_list=travelling_places, 
+								order_path=order_path, 
+								geo_token=geo_token, 
+								with_directions=True
+							)
 						else:
-							self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=geo_token)
+							self.get_route_visuals(
+								place_list=travelling_places, 
+								order_path=order_path, 
+								geo_token=geo_token
+							)
 					else:
 						print('MapBox API required for getting map result ... ')
-						self.get_route_visuals(place_list=travelling_places, order_path=order_path)
+						self.get_route_visuals(
+							place_list=travelling_places, 
+							order_path=order_path
+						)
 					print('plot is saved successfully ... ')
 
 				elif with_map:
 					if geo_token and with_directions:
 						self.get_route_visuals(
-							place_list=travelling_places, order_path=order_path, 
-							geo_token=geo_token, with_directions=True)
+							place_list=travelling_places, 
+							order_path=order_path, 
+							geo_token=geo_token, 
+							with_directions=True
+						)
 					elif geo_token and not with_directions:
-						self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=geo_token)
+						self.get_route_visuals(
+							place_list=travelling_places, 
+							order_path=order_path, 
+							geo_token=geo_token
+						)
 					else:
 						print('MapBox API required for getting map result ... ')
-						self.get_route_visuals(place_list=travelling_places, order_path=order_path)
+						self.get_route_visuals(
+							place_list=travelling_places, 
+							order_path=order_path
+						)
 					print('plot is saved successfully ... ')
 
 				elif geo_token:
 					if with_directions:
 						self.get_route_visuals(
-							place_list=travelling_places, order_path=order_path, 
-							geo_token=geo_token, with_directions=True)
+							place_list=travelling_places, 
+							order_path=order_path, 
+							geo_token=geo_token, 
+							with_directions=True
+						)
 					else:
-						self.get_route_visuals(place_list=travelling_places, order_path=order_path, geo_token=geo_token)
+						self.get_route_visuals(
+							place_list=travelling_places, 
+							order_path=order_path, 
+							geo_token=geo_token
+						)
 					print('plot is saved successfully ... ')
 
 				elif with_directions:
 					if geo_token:
 						self.get_route_visuals(
-							place_list=travelling_places, order_path=order_path, 
-							geo_token=geo_token, with_directions=True)
+							place_list=travelling_places, 
+							order_path=order_path, 
+							geo_token=geo_token, 
+							with_directions=True
+						)
 					else:
 						print('MapBox API required for getting map result ... ')
-						self.get_route_visuals(place_list=travelling_places, order_path=order_path)
+						self.get_route_visuals(
+							place_list=travelling_places, 
+							order_path=order_path
+						)
 					print('plot is saved successfully ... ')
 				
 				return place_path

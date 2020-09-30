@@ -1,9 +1,9 @@
-from dora_explorer.geo_data.india_data import india_dumped
+import requests
 
 class LocationHelper(object):
 	def __init__(self):
 		pass
-
+	
 	
 	def _get_noded_places(self, place_list):
 		"""
@@ -20,20 +20,37 @@ class LocationHelper(object):
 		return place_dict
 
 
+	def _get_coords(self, place_name):
+		"""
+		Get the coordination values for each place
+		:parma str place_name: Single place name
+		:return: list[float]
+		"""
+		loc_place = place_name.casefold()
+		geocode_url = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?SingleLine={}&outFields=*&f=json'.format(loc_place)
+
+		geocode_req = requests.get(url=geocode_url)
+		geocode_json = geocode_req.json()
+		
+		lat_ = geocode_json['candidates'][0]['location']['y']
+		lon_ = geocode_json['candidates'][0]['location']['x']
+		country_ = geocode_json['candidates'][0]['attributes']['Country']
+		
+		return [lat_, lon_, country_]
+
+
 	def _get_noded_coords(self, place_list):
 		"""
 		Get the coordination values for each place
-		:parma list place_list: Consists of city names
-		:return: dict(string, list[float])
+		:parma list place_list: List of place names
+		:return: dict(str, list[float])
 		"""
-		place_coords = {
-			i : j
-			for (i, j) in zip(
-				place_list, [india_dumped[i] for i in place_list]
-			)
-		}
-		return place_coords
+		coords_dumped = {}
+		for place_ in place_list:
+			loc_coords = self._get_coords(place_name=place_)
+			coords_dumped[place_] = loc_coords
 
+		return coords_dumped
 
 
 class DistanceLocator(LocationHelper):
@@ -55,12 +72,12 @@ class DistanceLocator(LocationHelper):
 		"""
 		from mpu import haversine_distance
 
-		from_coords = india_dumped[from_]
-		to_coords = india_dumped[to_]
+		from_coords = self._get_coords(place_name=from_)
+		to_coords = self._get_coords(place_name=to_)
 
 		dist = haversine_distance(
-			origin=from_coords, 
-			destination=to_coords
+			origin=from_coords[:2], 
+			destination=to_coords[:2]
 		)
 		dist = round(dist, 2)
 
@@ -91,6 +108,6 @@ if __name__ == '__main__':
 	place_list = ['Punch', 'Zunheboto', 'Zaidpur']
 
 	dl = DistanceLocator()
-
+	print(dl._get_noded_places(place_list))
 	print(dl.set_distance_matrix(dl._get_noded_places(place_list)))
-	print(dl.get_distance('Bengaluru', 'Mumbai'))
+	print(dl.get_distance('bengaluru', 'delhi'))

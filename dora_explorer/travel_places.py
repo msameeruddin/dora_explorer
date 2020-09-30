@@ -71,8 +71,8 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 			import requests
 
 			place_coords = self._get_noded_coords(place_list=[from_, to_])
-			from_lat, from_lon = place_coords[from_]
-			to_lat, to_lon = place_coords[to_]
+			from_lat, from_lon, from_country = place_coords[from_]
+			to_lat, to_lon, to_country = place_coords[to_]
 
 			map_url = 'https://api.mapbox.com/directions/v5/mapbox/{}/{},{};{},{}?geometries=geojson&access_token={}'.format(
 				'driving-traffic', from_lon, from_lat, to_lon, to_lat, geo_token
@@ -82,14 +82,20 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 			map_js = open_map.json()
 
 			lats = []; lons = []
-			for ks in map_js['routes']:
-				for k, v in ks.items():
-					if k == 'geometry':
-						for each_k, each_v in v.items():
-							if each_k == 'coordinates':
-								for each_loc in each_v:
-									lons.append(each_loc[0])
-									lats.append(each_loc[1])
+			try:
+				for ks in map_js['routes']:
+					for k, v in ks.items():
+						if k == 'geometry':
+							for each_k, each_v in v.items():
+								if each_k == 'coordinates':
+									for each_loc in each_v:
+										lons.append(each_loc[0])
+										lats.append(each_loc[1])
+			except KeyError as e:
+				from_coords = self._get_coords(place_name=from_)
+				to_coords = self._get_coords(place_name=to_)
+				lats.extend([from_coords[0], to_coords[0]])
+				lons.extend([from_coords[1], to_coords[1]])
 
 			return lats, lons
 
