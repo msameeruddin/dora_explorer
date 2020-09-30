@@ -5,7 +5,7 @@ with open('README.md') as readme_file:
 
 setup_args = dict(
     name='dora_explorer',
-    version='0.1.0',
+    version='0.2.0',
     description='Python project to get insights and distances to explore the places of the Earth',
     long_description_content_type="text/markdown",
     long_description=README,
