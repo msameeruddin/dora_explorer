@@ -27,7 +27,8 @@ install_requires = [
     'plotly', 
     'mpu', 
     'unidecode', 
-    'geonamescache'
+    'geonamescache',
+    'requests'
 ]
 
 if __name__ == '__main__':

@@ -2,3 +2,4 @@ plotly
 mpu
 unidecode
 geonamescache
+requests
