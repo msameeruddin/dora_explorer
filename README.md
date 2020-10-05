@@ -17,7 +17,7 @@ For getting the map results, it is important to have Mapbox API which is a free 
 ## Installation
 
 ```
-pip install dora-explorer
+pip install dora-explorer --user
 ```
 
 ## Implementation

@@ -58,11 +58,15 @@ class DistanceLocator(LocationHelper):
 		pass
 
 	
-	def get_distance(self, from_, to_):
+	def get_distance(self, from_, to_, in_miles=False, in_meters=False, in_feet=False, in_yards=False):
 		"""
 		Get the `haversine_distance` from `lat` and `lon`
 		:param string from_: from place
 		:param string to_: to place
+		:param bool in_miles: Miles
+		:param bool in_meters: Meters
+		:param bool in_feet: Feet
+		:param bool in_yards: Yards
 		:return: float
 
 		Examples
@@ -79,15 +83,22 @@ class DistanceLocator(LocationHelper):
 			origin=from_coords[:2], 
 			destination=to_coords[:2]
 		)
-		dist = round(dist, 2)
 
-		return dist
+		if in_miles:
+			return round((dist / 1.609), 2)
+		elif in_meters:
+			return round((dist * 1000), 2)
+		elif in_feet:
+			return round((dist * 3281), 2)
+		elif in_yards:
+			return round((dist * 1094), 2)
+		return round(dist, 2)
 
-	
+			
 	def set_distance_matrix(self, place_list):
 		"""
 		Set the distance matrix showing the distance values from `a` to `b`
-		:param  dict place_list: dict of places - {1 : 'place_name', 2 : 'place_name' ...}
+		:param dict place_list: dict of places - {1 : 'place_name', 2 : 'place_name' ...}
 		:return: dict[tuple[int], float]
 		"""
 		distance_matrix = {}

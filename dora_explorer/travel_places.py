@@ -65,7 +65,6 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 			[77.238106, 77.236954, 77.236847, ..., 75.78727]
 		)
 		"""
-
 		if geo_token:
 			## get direction route with the mode `driving-traffic`
 			import requests
@@ -166,7 +165,7 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 			)
 			layout = self.do_scatter_layout(go=go, title='Geo - Explorer')
 
-			fig = go.Figure(data=data)
+			fig = go.Figure(data=data, layout=layout)
 			fig.write_html('explore.html')
 
 		return True

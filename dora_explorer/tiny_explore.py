@@ -68,7 +68,7 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 	def get_non_source_nodes(self, source_city):
 		"""
 		Get all the possible nodes from which the path is found
-		:param int source_city: Source node
+		:param any(int, str) source_city: Source node
 		:return: list[list[int]]
 		If `1` is source, then possible paths would be
 		[[2, 3, 4]
@@ -148,10 +148,14 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 			return min(dists)
 
 	
-	def get_min_dis(self, source_city):
+	def get_min_dis(self, source_city, in_miles=False, in_meters=False, in_feet=False, in_yards=False):
 		"""
 		Get the possible minimal of minimal values for tsp
-		:param int source_city:
+		:param any(int, str) source_city:
+		:param bool in_miles: Miles
+		:param bool in_meters: Meters
+		:param bool in_feet: Feet
+		:param bool in_yards: Yards
 		:return: float
 		"""
 		if self.is_same_country is False:
@@ -169,15 +173,25 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 			self.one_step_nodes = []
 			self.final_step_nodes = []
 			self.end_distances = []
-			
+
+			min_dist = min(end_dis)
+			if in_miles:
+				return round((min_dist / 1.609), 2)
+			elif in_meters:
+				return round((min_dist * 1000), 2)
+			elif in_feet:
+				return round((min_dist * 3281), 2)
+			elif in_yards:
+				return round((min_dist * 1094), 2)
 			return round(min(end_dis), 2)
+		
 		return None
 	
 
 	def find_shortest_path(self, source_city):
 		"""
 		Find the shortest path after solving tsp
-		:param int source_city: 1
+		:param any(int, str) source_city: 1
 		:return string: "1 >> 2 >> 4 >> 3 >> 1"
 		"""
 		if isinstance(source_city, str):
@@ -221,7 +235,7 @@ class DoraTheExplorer(GeoTraveller, ShortestPathFinder):
 	def get_path(self, source_city, num_path=False, geo_token=None, with_plot=False, with_map=False, with_directions=False):
 		"""
 		Get the shortes path based on the actual city names
-		:param int source_city: 1
+		:param any(int, str) source_city:
 		:param bool num_path: Returns a num shortest path if available
 		:param NoneType geo_token: mapbox API required
 		:param bool with_plot: Retursn the normal plot if given True

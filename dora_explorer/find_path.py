@@ -1,6 +1,6 @@
 
 class ShortestPathFinder():
-	def __init__(self, source):
+	def __init__(self):
 		pass
 
 	
