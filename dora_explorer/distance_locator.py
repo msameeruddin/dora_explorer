@@ -122,7 +122,7 @@ class DistanceLocator(LocationHelper, HTMLPlotter):
 			data.append(
 				self.do_marker_scatter(go=go, x=lats_, y=lons_, size=15)
 			)
-			layout = self.do_scatter_layout(go=go, title='Geo - Explorer')
+			layout = self.do_scatter_layout(go=go, title='Distance plot')
 		
 		else:
 			lats_ = []; lons_ = []
