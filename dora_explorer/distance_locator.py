@@ -1,5 +1,7 @@
 import requests
 
+from dora_explorer.useful_plots import HTMLPlotter
+
 class LocationHelper(object):
 	def __init__(self):
 		pass
@@ -53,7 +55,7 @@ class LocationHelper(object):
 		return coords_dumped
 
 
-class DistanceLocator(LocationHelper):
+class DistanceLocator(LocationHelper, HTMLPlotter):
 	def __init__(self):
 		pass
 
@@ -93,6 +95,80 @@ class DistanceLocator(LocationHelper):
 		elif in_yards:
 			return round((dist * 1094), 2)
 		return round(dist, 2)
+
+
+	def get_distance_plot(self, from_, to_, with_map=False, with_directions=False, geo_token=None):
+		import plotly.graph_objects as go
+
+		from_lat, from_lon, from_country = self._get_coords(place_name=from_)
+		to_lat, to_lon, to_country = self._get_coords(place_name=to_)
+		data = []
+
+		if not geo_token:
+			lats_ = [from_lat, from_lon]
+			lons_ = [to_lat, to_lon]
+			data.append(
+				self.do_line_scatter(go=go, x=lats_, y=lons_, width=2.5)
+			)
+			data.append(
+				self.do_marker_scatter(go=go, x=lats_, y=lons_, size=15)
+			)
+			layout = self.do_scatter_layout(go=go, title='Geo - Explorer')
+		
+		else:
+			lats_ = []; lons_ = []
+			center_lat = sum([from_lat, to_lat]) / 2
+			center_lon = sum([from_lon, to_lon]) / 2
+			
+			if with_directions is True:
+				map_url = 'https://api.mapbox.com/directions/v5/mapbox/{}/{},{};{},{}?geometries=geojson&access_token={}'.format(
+					'driving-traffic', from_lon, from_lat, to_lon, to_lat, geo_token)
+
+				open_map = requests.get(url=map_url)
+				map_js = open_map.json()
+
+				try:
+					for ks in map_js['routes']:
+						for k, v in ks.items():
+							if k == 'geometry':
+								for each_k, each_v in v.items():
+									if each_k == 'coordinates':
+										for each_loc in each_v:
+											lons_.append(each_loc[0])
+											lats_.append(each_loc[1])
+				except KeyError as e:
+					lats_.extend([from_lat, to_lat])
+					lons_.extend([from_lon, to_lon])
+			else:
+				lats_.extend([from_lat, to_lat])
+				lons_.extend([from_lon, to_lon])
+
+			data.append(
+				self.do_map_line_plot(go=go, lats=lats_, lons=lons_, width=2.5)
+			)
+			data.append(
+				self.do_map_marker_plot(
+					go=go, 
+					lats=[from_lat, to_lat],
+					lons=[from_lon, to_lon],
+					size=15,
+					text_list=[from_, to_]
+				)
+			)
+			layout = self.do_map_layout(
+				go=go, 
+				title='Distance plot', 
+				accesstoken=geo_token, 
+				center_lat=center_lat, 
+				center_lon=center_lon, 
+				zoom=6, 
+				style='outdoors'
+			)
+
+		fig = go.Figure(data=data, layout=layout)
+		fig.show()
+
+		return True
 
 			
 	def set_distance_matrix(self, place_list):

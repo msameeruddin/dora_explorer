@@ -51,7 +51,7 @@ class HTMLPlotter(object):
 		return chunk
 
 
-	def do_map_layout(self, go, title, accesstoken, center_lat, center_lon, style):
+	def do_map_layout(self, go, title, accesstoken, center_lat, center_lon, zoom, style):
 		"""
 		Design the layout of the plot
 		:param go: plotly object
@@ -59,6 +59,7 @@ class HTMLPlotter(object):
 		:param string accesstoken: Mapbox API key
 		:param float center_lat:
 		:param float center_lon:
+		:param any(int, float) zoom:
 		:param string style: Style of the map plot
 		:return: plotly object
 		"""
@@ -76,7 +77,7 @@ class HTMLPlotter(object):
 					lon=center_lon
 				),
 				pitch=0,
-				zoom=3.5,
+				zoom=zoom,
 				style=style
 			),
 			margin=dict(l=40, r=40, t=40, b=40)

@@ -91,10 +91,8 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 										lons.append(each_loc[0])
 										lats.append(each_loc[1])
 			except KeyError as e:
-				from_coords = self._get_coords(place_name=from_)
-				to_coords = self._get_coords(place_name=to_)
-				lats.extend([from_coords[0], to_coords[0]])
-				lons.extend([from_coords[1], to_coords[1]])
+				lats.extend([from_lat, to_lat])
+				lons.extend([from_lon, to_lon])
 
 			return lats, lons
 
@@ -147,11 +145,9 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 				accesstoken=geo_token, 
 				center_lat=center_lat, 
 				center_lon=center_lon, 
+				zoom=3.5, 
 				style='outdoors'
 			)
-
-			fig = go.Figure(data=data, layout=layout)
-			fig.write_html('explore.html')
 
 		else:
 			## normal Scatter plot showing the shortest path
@@ -165,8 +161,9 @@ class GeoTraveller(DistanceLocator, HTMLPlotter):
 			)
 			layout = self.do_scatter_layout(go=go, title='Geo - Explorer')
 
-			fig = go.Figure(data=data, layout=layout)
-			fig.write_html('explore.html')
+		fig = go.Figure(data=data, layout=layout)
+		fig.write_html('explore.html')
+		fig.show()
 
 		return True
 
