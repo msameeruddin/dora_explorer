@@ -98,6 +98,15 @@ class DistanceLocator(LocationHelper, HTMLPlotter):
 
 
 	def get_distance_plot(self, from_, to_, with_map=False, with_directions=False, geo_token=None):
+		"""
+		Get the distance plot from_ to to_
+		:param string from_: from place
+		:param string to_: to place
+		:param bool with_map:
+		:param bool with_directions:
+		:param str geo_token: Mapbox API
+		:return: bool
+		"""
 		import plotly.graph_objects as go
 
 		from_lat, from_lon, from_country = self._get_coords(place_name=from_)
